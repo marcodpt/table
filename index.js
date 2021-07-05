@@ -6,15 +6,74 @@ import {
   component
 } from 'https://cdn.jsdelivr.net/gh/marcodpt/component/index.js'
 import mustache from 'https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.mjs'
+import {
+  query
+} from 'https://cdn.jsdelivr.net/gh/marcodpt/query/index.js'
 
 const render = (template, data) =>
   template == null ? null : mustache.render('{{={ }=}}\n'+template, data)
 
 const comp = language => {
   const vw = language == 'pt' ? view_pt : view
+  const Store = {
+    data: null,
+    totals: null,
+    count: null
+  }
+  const Query = {
+    data: null,
+    totals: null,
+    count: null
+  }
+  var update = null
+
+  const refresh = F => Q => {
+    const q = {
+      totals: query('', Q, {
+        _ids: null,
+        _skip: null,
+        _limit: null,
+        _group: '',
+        _filter: (Q._filter || []).concat(
+          Q._ids && Q._ids.length ? 'id~eq~'+Q._ids : []
+        )
+      }),
+      count: query('', Q, {
+        _ids: null,
+        _skip: null,
+        _limit: null,
+        _keys: '*'
+      }),
+      data: query('', Q, {
+        _ids: null
+      })
+    }
+
+    const getP = key => {
+      if (q[key] !== Query[key] && F[key] != null) {
+        Query[key] = q[key]
+        return F[key](query(q[key]))
+      } else {
+        return Store[key]
+      }
+    }
+
+    return Promise.resolve().then(() => {
+      return getP('totals')
+    }).then(res => {
+      Store.totals = res
+      return getP('count')
+    }).then(res => {
+      Store.count = res
+      return getP('data')
+    }).then(res => {
+      Store.data = res
+    })
+  }
 
   return (e, {
     schema,
+    query,
     data,
     totals,
     count,
@@ -25,10 +84,12 @@ const comp = language => {
     filter,
     group,
     search,
-    download
+    download,
+    change
   }) => {
     const I = schema.items || {}
     const P = I.properties || {}
+    update = refresh({data, totals, count})
 
     return component(e, vw, {
       title: schema.title,
@@ -58,10 +119,15 @@ const comp = language => {
       })),
       tab: '',
       Rows: data
-    }, (state, query) => ({
-      ...state,
-      query: q
-    }))
+    }, (state, Q) => {
+      const R = []
+      refresh(Q)
+
+      R.push({
+      })
+
+      return R
+    })
   }
 }
 

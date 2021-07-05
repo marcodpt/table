@@ -5,7 +5,8 @@ const lang = {
     filter: 'Filter',
     group: 'Group',
     ungroup: 'Ungroup',
-    download: 'Download'
+    download: 'Download',
+    pager: ({page, pages}) => `Page ${page} of ${pages}`
   },
   pt: {
     back: 'Voltar',
@@ -13,7 +14,8 @@ const lang = {
     filter: 'Filtrar',
     group: 'Agrupar',
     ungroup: 'Desagrupar',
-    download: 'Exportar'
+    download: 'Exportar',
+    pager: ({page, pages}) => `Página ${page} de ${pages}`
   }
 }
 
