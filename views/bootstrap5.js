@@ -287,7 +287,7 @@ const vw = language => {
         })) : cell(h, {}, field({
           type: 'checkbox',
           checked: check(row),
-          click: check(row, true)
+          change: check(row, true)
         }))
     ].concat((Links || []).map(l => (row, type) => 
       type == 'totals' ? cell(h, {}) :
@@ -306,7 +306,7 @@ const vw = language => {
         }))
       } else {
         return cell(h, {
-          left: X.data != null && String(X.data).indexOf('\n') != -1
+          left: X.data != null && X.format == 'text'
         }, data({
           ...X,
           href: type == 'totals' ? null : X.href

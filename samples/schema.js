@@ -28,7 +28,8 @@ export default {
         title: "Balance ($)"
       },
       bio: {
-        title: "Bio"
+        title: "Bio",
+        format: "text"
       }
     },
     links: [

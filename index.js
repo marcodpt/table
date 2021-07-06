@@ -15,72 +15,68 @@ const render = (template, data) =>
 
 const comp = language => {
   const vw = language == 'pt' ? view_pt : view
-  const Store = {
-    data: null,
-    totals: null,
-    count: null
-  }
+  const F = {}
+  const Q = {}
   const Query = {
-    data: null,
+    count: null,
     totals: null,
-    count: null
+    Rows: null
   }
-  var update = null
-
-  const refresh = F => Q => {
-    const q = {
-      totals: query('', Q, {
-        _ids: null,
-        _skip: null,
-        _limit: null,
-        _group: '',
-        _filter: (Q._filter || []).concat(
-          Q._ids && Q._ids.length ? 'id~eq~'+Q._ids : []
-        )
-      }),
-      count: query('', Q, {
-        _ids: null,
-        _skip: null,
-        _limit: null,
-        _keys: '*'
-      }),
-      data: query('', Q, {
-        _ids: null
-      })
+  const getQuery = (Q, key) => query('', Q, 
+    key == 'totals' ? {
+      _ids: null,
+      _skip: null,
+      _limit: null,
+      _group: '',
+      _filter: (Q._filter || []).concat(
+        Q._ids && Q._ids.length ? 'id~eq~'+Q._ids : []
+      )
+    } : key == 'count' ? {
+      _ids: null,
+      _skip: null,
+      _limit: null,
+      _keys: '*'
+    } : {
+      _ids: null
     }
+  )
 
-    const getP = key => {
-      if (q[key] !== Query[key] && F[key] != null) {
-        Query[key] = q[key]
-        return F[key](query(q[key]))
-      } else {
-        return Store[key]
+  const refresh = state => {
+    const R = [{...state}]
+    Object.keys(Query).filter(key => F[key] != null).forEach(key => {
+      const q = getQuery(Q, key)
+      if (Query[key] != q) {
+        Query[key] = q
+        R[0][key] = null
       }
-    }
-
-    return Promise.resolve().then(() => {
-      return getP('totals')
-    }).then(res => {
-      Store.totals = res
-      return getP('count')
-    }).then(res => {
-      Store.count = res
-      return getP('data')
-    }).then(res => {
-      Store.data = res
+      if (R[0][key] == null) {
+        R.push([
+          dispatch => {
+            Promise.resolve().then(() => {
+              return F[key](Q)
+            }).then(res => {
+              dispatch(state => {
+                state[key] = res
+                return {...state}
+              })
+            })
+          }
+        ])
+      }
     })
+
+    return R
   }
 
   return (e, {
     schema,
-    query,
     data,
     totals,
     count,
     back,
     check,
     sort,
-    page,
+    limit,
     filter,
     group,
     search,
@@ -89,12 +85,24 @@ const comp = language => {
   }) => {
     const I = schema.items || {}
     const P = I.properties || {}
-    update = refresh({data, totals, count})
+
+    if (data instanceof Array) {
+      F.Rows = () => data
+      F.count = () => data.length
+      F.totals = totals == null ? null : () => totals(data, Q)
+    } else {
+      F.Rows = data
+      F.count = count
+      F.totals = totals
+    }
 
     return component(e, vw, {
       title: schema.title,
       description: schema.description,
-      back: back,
+      back: !back ? null : state => {
+        back()
+        return state
+      },
       Actions: (schema.links || []).map(link => ({
         href: link.href,
         icon: link.icon,
@@ -115,18 +123,108 @@ const comp = language => {
       Fields: Object.keys(P).map(name => row => ({
         title: P[name].title,
         href: row ? render(P[name].href, row) : null,
-        data: !row || row[name] == null ? '' : row[name]
+        data: !row || row[name] == null ? '' : row[name],
+        format: P[name].format || P[name].type,
+        name: row == null ? name : null
       })),
       tab: '',
-      Rows: data
-    }, (state, Q) => {
-      const R = []
-      refresh(Q)
+      check: (row, exec) => {
+        Q._ids = Q._ids || []
+        if (exec) {
+          return state => {
+            const toggle = row => {
+              const i = Q._ids.indexOf(row.id)
+              if (i == -1) {
+                Q._ids.push(row.id)
+              } else {
+                Q._ids.splice(i, 1)
+              }
+            }
+            row ? toggle(row) : state.Rows.forEach(row => toggle(row))
 
-      R.push({
+            return refresh(state)
+          }
+        } else {
+          return Q._ids.indexOf(row.id) != -1
+        }
+      },
+      sort: !sort ? null : (name, exec) => {
+        if (exec) {
+          return state => {
+            if (Q[name] != null) {
+              delete Q[name]
+            } else {
+              Q._sort = (Q._sort == name ? '-' : '')+name
+            }
+            return refresh(state)
+          }
+        } else {
+          return Q[name] != null ? 'times' :
+            Q._sort == name ? 'sort-down' :
+            Q._sort == ('-'+name) ? 'sort-up' : 'sort'
+        }
+      },
+      page: !limit ||
+        !limit.length ||
+        isNaN(Q._limit) ||
+        !parseInt(Q._limit)
+      ? null : (action) => {
+        const limit = parseInt(Q._limit)
+        const skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
+
+        if (action == 'rr') {
+          return !skip || skip < limit ? null : state => {
+            delete Q._skip
+            return refresh(state)
+          }
+        } else if (action == 'r') {
+          return !skip || skip < limit ? null : state => {
+            Q._skip = skip - limit
+            if (Q._skip <= 0) {
+              delete Q._skip
+            }
+            return refresh(state)
+          }
+        } else if (action == 'f') {
+          return skip + limit > N ? null : state => {
+            Q._skip = skip + limit
+            return refresh(state)
+          }
+        } else if (action == 'ff') {
+          return skip + limit > N ? null : state => {
+            Q._skip = Math.floor(N / limit)
+            return refresh(state)
+          }
+        } else if (action == 'options') {
+          const p = 4
+          const R = []
+          for (var i = 1; i <= p; i++) {
+            R.push({value: i, label: `Page ${i} of ${p}`})
+          }
+          return R
+        } else if (action == 'change') {
+          return (state, ev) => {
+            alert(`page: ${ev.target.value}`)
+            return state
+          }
+        } else if (action == 'page') {
+          return 1
+        } else if (action == 'limiters') {
+          return null
+        } else if (action == 'limiter') {
+          return null
+        } else if (action == 'limit') {
+          return null
+        }
+      }
+    }, (state, Query) => {
+      Object.keys(Q).forEach(key => {
+        delete Q[key]
       })
-
-      return R
+      Object.keys(Query).forEach(key => {
+        Q[key] = Query[key]
+      })
+      return refresh(state)
     })
   }
 }
