@@ -213,6 +213,58 @@ const comp = language => {
           }, '')
         }
       },
+      filter: !filter ? null : action => {
+        if (action == 'open') {
+          return state => ({
+            ...state,
+            filter: {
+              field: null,
+              operator: '~ct~',
+              value: null
+            }
+          })
+        } else if (action == 'active') {
+          return true
+        } else if (action == 'items') {
+          return [
+            {
+              title: 'Primeiro filtro',
+              click: state => {
+                alert('First')
+                return state
+              }
+            }, {
+              title: 'Segundo filtro',
+              click: state => {
+                alert('Second')
+                return state
+              }
+            }
+          ]
+        } else if (action == 'close') {
+          return null
+        } else if (action == 'onfield') {
+          return null
+        } else if (action == 'fields') {
+          return null
+        } else if (action == 'field') {
+          return null
+        } else if (action == 'onoperator') {
+          return null
+        } else if (action == 'operators') {
+          return null
+        } else if (action == 'operator') {
+          return null
+        } else if (action == 'onvalue') {
+          return null
+        } else if (action == 'values') {
+          return null
+        } else if (action == 'value') {
+          return null
+        } else if (action == 'run') {
+          return null
+        }
+      },
       page: action => {
         if (action == 'rr') {
           return Z.page <= 1 ? null : state => {
