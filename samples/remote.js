@@ -11,6 +11,13 @@ export default {
       }, 1000)
     })
   },
+  count: Q => transform(data)({
+    ...Q,
+    _limit: null,
+    _skip: null
+  }).length,
   back: () => alert('back'),
-  sort: true
+  sort: true,
+  search: true,
+  limit: [10, 2, 5, 20, 100]
 }

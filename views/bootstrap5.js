@@ -120,7 +120,7 @@ const vw = language => {
           click: back
         }].concat(Actions || []).filter(a => a).map(a => link(a))
       },
-      !page ? null : {
+      !page || !page('limit') ? null : {
         type: 'inline',
         content: [
           link({

@@ -9,14 +9,18 @@ import mustache from 'https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.mjs'
 import {
   query
 } from 'https://cdn.jsdelivr.net/gh/marcodpt/query/index.js'
+import translate from './language.js'
 
 const render = (template, data) =>
   template == null ? null : mustache.render('{{={ }=}}\n'+template, data)
 
 const comp = language => {
+  const t = translate(language)
   const vw = language == 'pt' ? view_pt : view
+  var N = null
   const F = {}
   const Q = {}
+  const Z = {}
   const Query = {
     count: null,
     totals: null,
@@ -47,7 +51,11 @@ const comp = language => {
       const q = getQuery(Q, key)
       if (Query[key] != q) {
         Query[key] = q
-        R[0][key] = null
+        if (key == 'count') {
+          Z.N = null
+        } else {
+          R[0][key] = null
+        }
       }
       if (R[0][key] == null) {
         R.push([
@@ -56,7 +64,25 @@ const comp = language => {
               return F[key](Q)
             }).then(res => {
               dispatch(state => {
-                state[key] = res
+                if (key == 'count') {
+                  Z.N = res
+                  if (Q._limit == null && F.limit && F.limit.length) {
+                    Q._limit = F.limit[0]
+                  } else {
+                    Q._limit = parseInt(Q._limit)
+                  }
+                  Q._skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
+                  Z.pages = Z.N && Q._limit ? Math.ceil(Z.N / Q._limit) : 1
+                  Z.page = Q._limit ? Math.ceil(Q._skip / Q._limit) + 1 : 1
+                  if (Z.page < 1) {
+                    Z.page = 1
+                  } else if (Z.page > Z.pages) {
+                    Z.page = Z.pages
+                  }
+                  Q._skip = (Z.page - 1) * Q._limit
+                } else {
+                  state[key] = res
+                }
                 return {...state}
               })
             })
@@ -164,57 +190,91 @@ const comp = language => {
             Q._sort == ('-'+name) ? 'sort-up' : 'sort'
         }
       },
-      page: !limit ||
-        !limit.length ||
-        isNaN(Q._limit) ||
-        !parseInt(Q._limit)
-      ? null : (action) => {
-        const limit = parseInt(Q._limit)
-        const skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
-
+      search: !search ? null : action => {
+        const prefix = '_~ct~'
+        const l = prefix.length
+        if (action == 'clear' || action == 'change') {
+          return (state, ev) => {
+            Q._filter = (Q._filter || []).filter(f => f.substr(0, l) != prefix)
+            if (action == 'change') {
+              var v = ev.target.value
+              if (v.length) {
+                Q._filter.push(prefix+v)
+              }
+            }
+            return refresh(state)
+          }
+        } else if (action == 'value') {
+          return (Q._filter || []).reduce((search, item) => {
+            if (!search.length && item.substr(0, l) == prefix) {
+              search = item.substr(l)
+            }
+            return search
+          }, '')
+        }
+      },
+      page: action => {
         if (action == 'rr') {
-          return !skip || skip < limit ? null : state => {
+          return Z.page <= 1 ? null : state => {
             delete Q._skip
             return refresh(state)
           }
         } else if (action == 'r') {
-          return !skip || skip < limit ? null : state => {
-            Q._skip = skip - limit
+          return Z.page <= 1 ? null : state => {
+            Q._skip = (Z.page - 2) * Q._limit
             if (Q._skip <= 0) {
               delete Q._skip
             }
             return refresh(state)
           }
         } else if (action == 'f') {
-          return skip + limit > N ? null : state => {
-            Q._skip = skip + limit
+          return Z.page >= Z.pages ? null : state => {
+            Q._skip = Z.page * Q._limit
             return refresh(state)
           }
         } else if (action == 'ff') {
-          return skip + limit > N ? null : state => {
-            Q._skip = Math.floor(N / limit)
+          return Z.page >= Z.pages ? null : state => {
+            Q._skip = (Z.pages - 1) * Q._limit
             return refresh(state)
           }
         } else if (action == 'options') {
-          const p = 4
           const R = []
-          for (var i = 1; i <= p; i++) {
-            R.push({value: i, label: `Page ${i} of ${p}`})
+          for (var page = 1; page <= Z.pages; page++) {
+            R.push({value: page, params: {page, pages: Z.pages}})
           }
-          return R
+          return R.map(r => ({
+            value: r.value,
+            label: t('pager', r.params)
+          }))
         } else if (action == 'change') {
           return (state, ev) => {
-            alert(`page: ${ev.target.value}`)
-            return state
+            Z.page = parseInt(ev.target.value)
+            Q._skip = (Z.page - 1) * Q._limit
+            return refresh(state)
           }
         } else if (action == 'page') {
-          return 1
+          return Z.page
         } else if (action == 'limiters') {
-          return null
+          return F.limit.length <= 1 ? null : F.limit.map(l => ({
+            value: l,
+            label: t('limiter', {limit: l})
+          }))
         } else if (action == 'limiter') {
-          return null
+          return (state, ev) => {
+            Q._limit = parseInt(ev.target.value)
+            Q._skip = (Z.page - 1) * Q._limit
+            return refresh(state)
+          }
         } else if (action == 'limit') {
-          return null
+          if (F.limit == null) {
+            F.limit = limit == null ? [] :
+              limit instanceof Array ? limit : [limit]
+            F.limit = F.limit.filter(l => !isNaN(l) && l > 0)
+            if (F.limit.length && Q._limit == null) {
+              Q._limit = parseInt(F.limit[0]) || 10
+            }
+          }
+          return Q._limit
         }
       }
     }, (state, Query) => {

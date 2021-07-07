@@ -18,7 +18,7 @@ export default data => Q => {
     })
   }
 
-  if (!isNaN(Q._limit)) {
+  if (Q._limit != null && !isNaN(Q._limit)) {
     const limit = parseInt(Q._limit)
     const skip = !isNaN(Q._skip) ? parseInt(Q._skip) : 0
     x = x.slice(skip, skip + limit)
