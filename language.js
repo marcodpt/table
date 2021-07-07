@@ -7,7 +7,15 @@ const lang = {
     ungroup: 'Ungroup',
     download: 'Download',
     pager: ({page, pages}) => `Page ${page} of ${pages}`,
-    limiter: ({limit}) => `${limit} items per page`
+    limiter: ({limit}) => `${limit} items per page`,
+    ct: 'contains',
+    nc: 'not contains',
+    eq: 'equals',
+    ne: 'not equals',
+    gt: 'greater than',
+    ge: 'greater than or equal',
+    lt: 'less than',
+    le: 'less than or equal'
   },
   pt: {
     back: 'Voltar',
@@ -17,7 +25,15 @@ const lang = {
     ungroup: 'Desagrupar',
     download: 'Exportar',
     pager: ({page, pages}) => `Página ${page} de ${pages}`,
-    limiter: ({limit}) => `${limit} itens por página`
+    limiter: ({limit}) => `${limit} itens por página`,
+    ct: 'contêm',
+    nc: 'não contêm',
+    eq: 'igual',
+    ne: 'diferente',
+    gt: 'maior que',
+    ge: 'maior que ou igual',
+    lt: 'menor que',
+    le: 'menor que ou igual'
   }
 }
 

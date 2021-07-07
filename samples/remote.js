@@ -1,6 +1,6 @@
 import schema from './schema.js'
 import data from './data.js'
-import transform from './transform.js'
+import transform from '../transform.js'
 
 export default {
   schema: schema,
