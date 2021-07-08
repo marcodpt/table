@@ -1,4 +1,6 @@
 import operators from './operators.js' 
+import getFilters from './filters.js' 
+
 export default data => Q => {
   const O = operators((k) => k)
   var x = data
@@ -8,25 +10,12 @@ export default data => Q => {
     true
   ))
 
-  const F = (Q._filter || [])
-    .map(f => O.map(o => {
-      const F = f.split(o.value)
-      const l = F.length
-      const key = F.shift()
-      const value = F.join(o.value)
-      return {
-        len: l,
-        filter: o.filter,
-        key: key,
-        value: value
-      }
-    }).filter(F => F.len > 1)[0])
-    .filter(f => f != null)
+  const F = getFilters(Q, O)
 
   x = x.filter(row => F.reduce((pass, O) => {
-    return pass && O.key == '_' ? Object.keys(row).reduce((pass, key) => {
+    return pass && (O.key == '_' ? Object.keys(row).reduce((pass, key) => {
       return pass || O.filter(O.value, row[key])
-    }, false) : O.filter(O.value, row[O.key])
+    }, false) : O.filter(O.value, row[O.key]))
   }, true))
 
   if (Q._sort) {

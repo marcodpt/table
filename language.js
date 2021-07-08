@@ -39,5 +39,5 @@ const lang = {
 
 export default language => (key, params) => {
   const F = (lang[language] || lang.en || {})[key]
-  return F == null ? key : typeof F == 'function' ? F(params) : key
+  return F == null ? key : typeof F == 'function' ? F(params) : F
 }

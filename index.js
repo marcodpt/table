@@ -10,6 +10,8 @@ import {
   query
 } from 'https://cdn.jsdelivr.net/gh/marcodpt/query/index.js'
 import translate from './language.js'
+import operators from './operators.js'
+import getFilters from './filters.js' 
 
 const render = (template, data) =>
   template == null ? null : mustache.render('{{={ }=}}\n'+template, data)
@@ -18,6 +20,7 @@ const comp = language => {
   const t = translate(language)
   const vw = language == 'pt' ? view_pt : view
   var N = null
+  var O = operators(t)
   const F = {}
   const Q = {}
   const Z = {}
@@ -94,11 +97,29 @@ const comp = language => {
     return R
   }
 
+  const getFields = schema => {
+    const P = schema.items.properties
+    return Object.keys(P).map(key => ({
+      value: key,
+      label: P[key].title
+    }))
+  }
+
+  const getLabel = (X, value) => (X || []).reduce((label, x) => {
+    if (value == label && x.value == value) {
+      label = x.label
+    }
+
+    return label
+  }, value)
+
   return (e, {
     schema,
     data,
     totals,
     count,
+    values,
+    operators,
     back,
     check,
     sort,
@@ -111,18 +132,41 @@ const comp = language => {
   }) => {
     const I = schema.items || {}
     const P = I.properties || {}
+    const Fields = getFields(schema)
+    const Filter = {
+      field: null,
+      operator: null,
+      value: null,
+      strict: false
+    }
+    const Values = {}
 
     if (data instanceof Array) {
       F.Rows = () => data
       F.count = () => data.length
       F.totals = totals == null ? null : () => totals(data, Q)
+      F.values = key => {
+        V = data.reduce((V, row) => {
+          if (V.indexOf(row[key]) == -1) {
+            V.push(row[key])
+          }
+          return V
+        }, [])
+        V.sort()
+        return V
+      }
     } else {
       F.Rows = data
       F.count = count
       F.totals = totals
+      F.values = values
     }
 
-    return component(e, vw, {
+    if (operators) {
+      O = operators.then ? null : operators
+    }
+
+    return component(e, vw, [{
       title: schema.title,
       description: schema.description,
       back: !back ? null : state => {
@@ -214,55 +258,96 @@ const comp = language => {
         }
       },
       filter: !filter ? null : action => {
-        if (action == 'open') {
-          return state => ({
-            ...state,
-            filter: {
-              field: null,
-              operator: '~ct~',
-              value: null
-            }
-          })
-        } else if (action == 'active') {
-          return true
-        } else if (action == 'items') {
-          return [
-            {
-              title: 'Primeiro filtro',
-              click: state => {
-                alert('First')
-                return state
-              }
-            }, {
-              title: 'Segundo filtro',
-              click: state => {
-                alert('Second')
-                return state
-              }
+        const getV = state => [
+          {...state}, 
+          !Filter.strict || Values[Filter.field] ? null : [
+            dispatch => {
+              Promise.resolve().then(() => {
+                return F.values(Filter.field, Q)
+              }).then(res => {
+                Values[Filter.field] = res
+                dispatch(state => ({...state}))
+              })
             }
           ]
+        ]
+        if (action == 'open') {
+          return !O || !O[0] ? null : state => {
+            Filter.field = Fields[0] ? Fields[0].value : null
+            Filter.operator = O[0].value
+            Filter.strict = !F.values ? false : O[0].strict
+            Filter.value = null
+
+            return {
+              ...state,
+              tab: 'filter'
+            }
+          }
+        } else if (action == 'active') {
+          const prefix = '_~ct~'
+          const l = prefix.length
+          return (Q._filter || [])
+            .filter(f => f.substr(0, l) != prefix).length > 0
+        } else if (action == 'items') {
+          return getFilters(Q, O).map(f => ({
+            title: getLabel(Fields, f.key)+' '+f.label+' '+f.value,
+            click: state => {
+              Q._filter = Q._filter.filter(x => x != f.sign)
+              return refresh({...state})
+            }
+          }))
         } else if (action == 'close') {
-          return null
+          return state => ({
+            ...state,
+            tab: ''
+          })
         } else if (action == 'onfield') {
-          return null
+          return (state, ev) => {
+            Filter.field = ev.target.value
+            Filter.value = null
+            return getV(state)
+          }
         } else if (action == 'fields') {
-          return null
+          return Fields
         } else if (action == 'field') {
-          return null
+          return Filter.field
         } else if (action == 'onoperator') {
-          return null
+          return (state, ev) => {
+            Filter.operator = ev.target.value
+            const strict = !F.values ? false : 
+              O.filter(o => o.value == Filter.operator)[0].strict
+            if (Filter.strict != strict) {
+              Filter.value = null
+              Filter.strict = strict
+            }
+            const k = Filter.field
+            return getV(state)
+          }
         } else if (action == 'operators') {
-          return null
+          return O
         } else if (action == 'operator') {
-          return null
+          return Filter.operator
         } else if (action == 'onvalue') {
-          return null
+          return (state, ev) => {
+            Filter.value = ev.target.value
+            return {...state}
+          }
         } else if (action == 'values') {
-          return null
+          const V = Values[Filter.field]
+          return Filter.strict ? V || null : undefined
         } else if (action == 'value') {
-          return null
+          return Filter.value
         } else if (action == 'run') {
-          return null
+          return Filter.value == null ? null : state => {
+            Q._filter = (Q._filter || [])
+            Q._filter.push(
+              Filter.field+Filter.operator+Filter.value
+            )
+            return refresh({
+              ...state,
+              tab: ''
+            })
+          }
         }
       },
       page: action => {
@@ -329,7 +414,16 @@ const comp = language => {
           return Q._limit
         }
       }
-    }, (state, Query) => {
+    }, O != null ? false : [
+      dispatch => {
+        Promise.resolve().then(() => {
+          return operators
+        }).then(res => {
+          O = res
+          dispatch(state => ({...state}))
+        })
+      }
+    ]], (state, Query) => {
       Object.keys(Q).forEach(key => {
         delete Q[key]
       })
