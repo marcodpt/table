@@ -21,6 +21,9 @@ export default {
       name: {
         title: "Name"
       },
+      gender: {
+        title: "Gender"
+      },
       age: {
         title: "Age"
       },

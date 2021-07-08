@@ -193,13 +193,13 @@ const vw = language => {
               })
             ])
           )),
-          !group || group('current') ? null : link({
+          !group || group('active') ? null : link({
             icon: 'th',
             type: 'warning',
             title: t('group'),
             click: group('open')
           }),
-          !group || !group('current') ? null : link({
+          !group || !group('active') ? null : link({
             icon: 'times',
             type: 'warning',
             title: t('ungroup'),

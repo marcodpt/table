@@ -48,55 +48,6 @@ const comp = language => {
     }
   )
 
-  const refresh = state => {
-    const R = [{...state}]
-    Object.keys(Query).filter(key => F[key] != null).forEach(key => {
-      const q = getQuery(Q, key)
-      if (Query[key] != q) {
-        Query[key] = q
-        if (key == 'count') {
-          Z.N = null
-        } else {
-          R[0][key] = null
-        }
-      }
-      if (R[0][key] == null) {
-        R.push([
-          dispatch => {
-            Promise.resolve().then(() => {
-              return F[key](Q)
-            }).then(res => {
-              dispatch(state => {
-                if (key == 'count') {
-                  Z.N = res
-                  if (Q._limit == null && F.limit && F.limit.length) {
-                    Q._limit = F.limit[0]
-                  } else {
-                    Q._limit = parseInt(Q._limit)
-                  }
-                  Q._skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
-                  Z.pages = Z.N && Q._limit ? Math.ceil(Z.N / Q._limit) : 1
-                  Z.page = Q._limit ? Math.ceil(Q._skip / Q._limit) + 1 : 1
-                  if (Z.page < 1) {
-                    Z.page = 1
-                  } else if (Z.page > Z.pages) {
-                    Z.page = Z.pages
-                  }
-                  Q._skip = (Z.page - 1) * Q._limit
-                } else {
-                  state[key] = res
-                }
-                return {...state}
-              })
-            })
-          }
-        ])
-      }
-    })
-
-    return R
-  }
-
   const getFields = schema => {
     const P = schema.items.properties
     return Object.keys(P).map(key => ({
@@ -139,7 +90,9 @@ const comp = language => {
       value: null,
       strict: false
     }
+    const Group = []
     const Values = {}
+    var Totals = []
 
     if (data instanceof Array) {
       F.Rows = () => data
@@ -163,10 +116,121 @@ const comp = language => {
     }
 
     if (operators) {
-      O = operators.then ? null : operators
+      O = operators
     }
 
-    return component(e, vw, [{
+    const getState = () => {
+      const G = (Q._group || '').split(',').filter(g => g.length)
+      return {
+        Links: G.length ? [] : 
+          (I.links || []).map(link => row => row ? {
+            href: render(link.href, row),
+            icon: link.icon,
+            type: link.type,
+            title: link.title
+          } : {
+            href: link.multiple,
+            icon: link.icon,
+            type: link.type,
+            title: link.title
+          }),
+        Fields: Object.keys(P).filter(key => 
+          !G.length || Totals.indexOf(key) != -1 || G.indexOf(key) != -1
+        ).map(name => row => ({
+          title: P[name].title,
+          href: row && !G.length ? render(P[name].href, row) : null,
+          data: !row || row[name] == null ? '' : row[name],
+          format: P[name].format || P[name].type,
+          name: row == null ? name : null
+        })),
+        check: !check || G.length ? null : (row, exec) => {
+          Q._ids = Q._ids || []
+          if (exec) {
+            return state => {
+              const toggle = row => {
+                const i = Q._ids.indexOf(row.id)
+                if (i == -1) {
+                  Q._ids.push(row.id)
+                } else {
+                  Q._ids.splice(i, 1)
+                }
+              }
+              row ? toggle(row) : state.Rows.forEach(row => toggle(row))
+
+              return refresh(state)
+            }
+          } else {
+            return Q._ids.indexOf(row.id) != -1
+          }
+        }
+      }
+    }
+
+    const refresh = state => {
+      const R = [{
+        ...state,
+        ...getState()
+      }]
+      const K = Object.keys(Query).filter(key => F[key] != null)
+      var update = false
+      K.forEach(key => {
+        const q = getQuery(Q, key)
+        if (Query[key] != q) {
+          update = true
+          Query[key] = q
+          if (key == 'count') {
+            Z.N = null
+          } else {
+            R[0][key] = null
+          }
+        }
+      })
+
+      if (update) {
+        var X = null
+        R.push([
+          dispatch => {
+            Promise.resolve().then(() => {
+              return R[0].count == null && F.count ? F.count(Q) : R[0].count
+            }).then(res => {
+              Z.N = res
+              if (Q._limit == null && F.limit && F.limit.length) {
+                Q._limit = F.limit[0]
+              } else {
+                Q._limit = parseInt(Q._limit)
+              }
+              Q._skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
+              Z.pages = Z.N && Q._limit ? Math.ceil(Z.N / Q._limit) : 1
+              Z.page = Q._limit ? Math.ceil(Q._skip / Q._limit) + 1 : 1
+              if (Z.page < 1) {
+                Z.page = 1
+              } else if (Z.page > Z.pages) {
+                Z.page = Z.pages
+              }
+              Q._skip = (Z.page - 1) * Q._limit
+
+              return R[0].Rows == null && F.Rows ? F.Rows(Q) : R[0].Rows
+            }).then(res => {
+              X = res
+
+              return R[0].totals == null && F.totals ?
+                F.totals(Q) : R[0].totals
+            }).then(res => {
+              Totals = Object.keys(res)
+              dispatch(state => ({
+                ...state,
+                Rows: X,
+                totals: res
+              }))
+            })
+          }
+        ])
+      }
+
+      return R
+    }
+
+    return component(e, vw, {
       title: schema.title,
       description: schema.description,
       back: !back ? null : state => {
@@ -179,45 +243,7 @@ const comp = language => {
         type: link.type,
         title: link.title
       })),
-      Links: (I.links || []).map(link => row => row ? {
-        href: render(link.href, row),
-        icon: link.icon,
-        type: link.type,
-        title: link.title
-      } : {
-        href: link.multiple,
-        icon: link.icon,
-        type: link.type,
-        title: link.title
-      }),
-      Fields: Object.keys(P).map(name => row => ({
-        title: P[name].title,
-        href: row ? render(P[name].href, row) : null,
-        data: !row || row[name] == null ? '' : row[name],
-        format: P[name].format || P[name].type,
-        name: row == null ? name : null
-      })),
       tab: '',
-      check: (row, exec) => {
-        Q._ids = Q._ids || []
-        if (exec) {
-          return state => {
-            const toggle = row => {
-              const i = Q._ids.indexOf(row.id)
-              if (i == -1) {
-                Q._ids.push(row.id)
-              } else {
-                Q._ids.splice(i, 1)
-              }
-            }
-            row ? toggle(row) : state.Rows.forEach(row => toggle(row))
-
-            return refresh(state)
-          }
-        } else {
-          return Q._ids.indexOf(row.id) != -1
-        }
-      },
       sort: !sort ? null : (name, exec) => {
         if (exec) {
           return state => {
@@ -293,7 +319,7 @@ const comp = language => {
             title: getLabel(Fields, f.key)+' '+f.label+' '+f.value,
             click: state => {
               Q._filter = Q._filter.filter(x => x != f.sign)
-              return refresh({...state})
+              return refresh(state)
             }
           }))
         } else if (action == 'close') {
@@ -343,6 +369,54 @@ const comp = language => {
             Q._filter.push(
               Filter.field+Filter.operator+Filter.value
             )
+            return refresh({
+              ...state,
+              tab: ''
+            })
+          }
+        }
+      },
+      group: action => {
+        if (action == 'active') {
+          return Q._group != null && Q._group.length
+        } else if (action == 'current') {
+          const label = Group.map(k => getLabel(Fields, k)).join(', ')
+          return label ? ': '+label : ''
+        } else if (action == 'open') {
+          while (Group.length) {
+            Group.pop()
+          }
+          return state => ({
+            ...state,
+            tab: 'group'
+          })
+        } else if (action == 'clear') {
+          return state => {
+            delete Q._group
+            return refresh(state)
+          }
+        } else if (action == 'close') {
+          return state => ({
+            ...state,
+            tab: ''
+          })
+        } else if (action == 'fields') {
+          return Fields
+        } else if (action == 'change') {
+          return (state, ev) => {
+            const k = ev.target.value
+            const i = Group.indexOf(k)
+            if (i != -1) {
+              Group.splice(i, 1)
+            } else {
+              Group.push(k)
+            }
+
+            return {...state}
+          }
+        } else if (action == 'run') {
+          return !Group.length ? null : state => {
+            Q._group = Group.join(',')
             return refresh({
               ...state,
               tab: ''
@@ -413,17 +487,9 @@ const comp = language => {
           }
           return Q._limit
         }
-      }
-    }, O != null ? false : [
-      dispatch => {
-        Promise.resolve().then(() => {
-          return operators
-        }).then(res => {
-          O = res
-          dispatch(state => ({...state}))
-        })
-      }
-    ]], (state, Query) => {
+      },
+      ...getState()
+    }, (state, Query) => {
       Object.keys(Q).forEach(key => {
         delete Q[key]
       })
