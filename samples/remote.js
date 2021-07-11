@@ -59,5 +59,6 @@ export default {
   filter: true,
   group: true,
   check: true,
+  csv: 'data.csv',
   limit: [10, 2, 5, 20, 50, 100]
 }

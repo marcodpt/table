@@ -86,7 +86,7 @@ const vw = language => {
     filter,
     group,
     search,
-    download,
+    csv,
     tab,
     totals,
     Rows
@@ -156,7 +156,7 @@ const vw = language => {
         ]
       },
       tab == 'filter' || tab == 'group' || !(
-        download || filter || group || search
+        csv || filter || group || search
       ) ? null : {
         type: 'raw',
         content: h('div', {
@@ -205,12 +205,12 @@ const vw = language => {
             title: t('ungroup'),
             click: group('clear')
           }),
-          !download ? null : link({
+          !csv ? null : link({
             icon: 'file-csv',
             type: 'secondary',
-            title: t('download'),
-            click: download('run'),
-            pending: download('pending')
+            title: t('csv'),
+            click: csv('run'),
+            pending: csv('pending')
           })
         ])
       },

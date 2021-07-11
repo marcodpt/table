@@ -78,7 +78,7 @@ const comp = language => {
     filter,
     group,
     search,
-    download,
+    csv,
     change
   }) => {
     const I = schema.items || {}
@@ -93,6 +93,7 @@ const comp = language => {
     const Group = []
     const Values = {}
     var Totals = []
+    var pending = false
 
     if (data instanceof Array) {
       F.Rows = () => data
@@ -258,6 +259,48 @@ const comp = language => {
           return Q[name] != null ? 'times' :
             Q._sort == name ? 'sort-down' :
             Q._sort == ('-'+name) ? 'sort-up' : 'sort'
+        }
+      },
+      csv: !csv ? null : action => {
+        if (action == 'pending') {
+          return pending
+        } else if (action == 'run') {
+          return state => [
+            {
+              ...state
+            }, [dispatch => {
+              pending = true
+              Promise.resolve().then(() => F.Rows({
+                ...Q,
+                _skip: null,
+                _limit: null
+              })).then(Data => {
+                const nl = "\n"
+                const sep = "\t"
+
+                var data = ''
+                data += Object.keys(P)
+                  .map(key => P[key].title || key).join(sep)+nl
+                data += Data.map(function (row) {
+                  return Object.keys(P).map(function (field) {
+                    return String(row[field])
+                  }).join(sep)
+                }).join(nl)
+
+                pending = false
+                dispatch(state => ({...state}))
+                var link = document.createElement('a')
+                link.setAttribute('href',
+                  'data:text/plain;charset=utf-8,'+
+                  encodeURIComponent(data)
+                )
+                link.setAttribute('download', csv)
+                document.body.appendChild(link)
+                link.click()
+                link.parentNode.removeChild(link)
+              })
+            }]
+          ]
         }
       },
       search: !search ? null : action => {
