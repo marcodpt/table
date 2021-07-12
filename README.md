@@ -32,6 +32,8 @@ be choosed by the user.
  - string `csv`: Csv file name for download
  - function `change(params)`: A function called every change on data
    - object `params`: the current query params on data, described below
+ - object `params`: the current query params on data, described below, use
+`null` if you want by default wait for an update call before display `data`
 
 ## Update
  - object `params`: the current query params on data, properties:
