@@ -12,6 +12,7 @@ import {
 import translate from './language.js'
 import operators from './operators.js'
 import getFilters from './filters.js' 
+import transform from './transform.js'
 
 const render = (template, data) =>
   template == null ? null : mustache.render('{{={ }=}}\n'+template, data)
@@ -29,24 +30,35 @@ const comp = language => {
     totals: null,
     Rows: null
   }
-  const getQuery = (Q, key) => query('', Q, 
-    key == 'totals' ? {
-      _ids: null,
-      _skip: null,
-      _limit: null,
-      _group: '',
-      _filter: (Q._filter || []).concat(
-        Q._ids && Q._ids.length ? 'id~eq~'+Q._ids : []
-      )
-    } : key == 'count' ? {
-      _ids: null,
-      _skip: null,
-      _limit: null,
-      _keys: '*'
-    } : {
-      _ids: null
+  const getQuery = (key, R) => {
+    const q = query('', Q, 
+      key == 'totals' ? {
+        _ids: null,
+        _skip: null,
+        _limit: null,
+        _sort: null,
+        _group: '',
+        _filter: (Q._filter || []).concat(
+          Q._ids && Q._ids.length ? 'id~eq~'+(Q._ids.join(',')) : []
+        )
+      } : key == 'count' ? {
+        _ids: null,
+        _skip: null,
+        _limit: null,
+        _sort: null
+      } : {
+        _ids: null
+      }
+    )
+    if (Query[key] != q && F[key] != null) {
+      Query[key] = q
+      if (key == 'count') {
+        Z.N = null
+      } else {
+        R[0][key] = null
+      }
     }
-  )
+  }
 
   const getFields = schema => {
     const P = schema.items.properties
@@ -79,11 +91,11 @@ const comp = language => {
     group,
     search,
     csv,
-    change
+    change,
+    params
   }) => {
-    const I = schema.items || {}
-    const P = I.properties || {}
-    const Fields = getFields(schema)
+    const Limiters = limit == null ? [] : 
+      typeof limit == 'number' ? [limit] : limit
     const Filter = {
       field: null,
       operator: null,
@@ -96,17 +108,39 @@ const comp = language => {
     var pending = false
 
     if (data instanceof Array) {
-      F.Rows = () => data
-      F.count = () => data.length
-      F.totals = totals == null ? null : () => totals(data, Q)
+      if (schema == null) {
+        schema = {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: data.reduce((P, row) => {
+              Object.keys(row).forEach(key => {
+                P[key] = {
+                  title: key
+                }
+              })
+              return P
+            }, {})
+          }
+        }
+      }
+      const handler = transform(data, totals == null ? data => ({}) : totals)
+      F.Rows = handler
+      F.count = (Q) => handler(Q).length
+      F.totals = totals == null ? null : (Q) => handler(Q)[0] || {}
       F.values = key => {
-        V = data.reduce((V, row) => {
+        const V = data.reduce((V, row) => {
           if (V.indexOf(row[key]) == -1) {
             V.push(row[key])
           }
           return V
         }, [])
-        V.sort()
+        V.sort(([
+          'number',
+          'integer'
+        ]).indexOf(
+          schema.items.properties[key].type
+        ) != -1 ? (a, b) => a - b : undefined)
         return V
       }
     } else {
@@ -115,6 +149,10 @@ const comp = language => {
       F.totals = totals
       F.values = values
     }
+
+    const I = schema.items || {}
+    const P = I.properties || {}
+    const Fields = getFields(schema)
 
     if (operators) {
       O = operators
@@ -172,66 +210,62 @@ const comp = language => {
         ...state,
         ...getState()
       }]
-      const K = Object.keys(Query).filter(key => F[key] != null)
-      var update = false
-      K.forEach(key => {
-        const q = getQuery(Q, key)
-        if (Query[key] != q) {
-          update = true
-          Query[key] = q
-          if (key == 'count') {
-            Z.N = null
-          } else {
-            R[0][key] = null
-          }
-        }
-      })
 
-      if (update) {
-        var X = null
-        R.push([
-          dispatch => {
-            Promise.resolve().then(() => {
-              return R[0].count == null && F.count ? F.count(Q) : R[0].count
-            }).then(res => {
-              Z.N = res
-              if (Q._limit == null && F.limit && F.limit.length) {
-                Q._limit = F.limit[0]
-              } else {
-                Q._limit = parseInt(Q._limit)
-              }
-              Q._skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
-              Z.pages = Z.N && Q._limit ? Math.ceil(Z.N / Q._limit) : 1
-              Z.page = Q._limit ? Math.ceil(Q._skip / Q._limit) + 1 : 1
-              if (Z.page < 1) {
-                Z.page = 1
-              } else if (Z.page > Z.pages) {
-                Z.page = Z.pages
-              }
-              Q._skip = (Z.page - 1) * Q._limit
+      var X = null
+      R.push([
+        dispatch => {
+          Promise.resolve().then(() => {
+            getQuery('count', R)
+            return R[0].count == null && F.count ?
+              F.count(query(Query.count)) : R[0].count
+          }).then(res => {
+            Z.N = res
+            if (Q._limit == null && Limiters.length) {
+              Q._limit = Limiters[0]
+            } else {
+              Q._limit = !isNaN(Q._limit) ? parseInt(Q._limit) : 0
+            }
+            Q._skip = isNaN(Q._skip) ? 0 : parseInt(Q._skip)
+            Z.pages = Z.N && Q._limit ? Math.ceil(Z.N / Q._limit) : 1
+            Z.page = Q._limit ? Math.ceil(Q._skip / Q._limit) + 1 : 1
+            if (Z.page < 1) {
+              Z.page = 1
+            } else if (Z.page > Z.pages) {
+              Z.page = Z.pages
+            }
+            Q._skip = (Z.page - 1) * Q._limit
+            if (!Q._limit) {
+              delete Q._skip
+              delete Q._limit
+            }
+            getQuery('Rows', R)
+            change && change(Q)
 
-              return R[0].Rows == null && F.Rows ? F.Rows(Q) : R[0].Rows
-            }).then(res => {
-              X = res
+            return R[0].Rows == null && F.Rows ?
+              F.Rows(query(Query.Rows)) : R[0].Rows
+          }).then(res => {
+            X = res
+            getQuery('totals', R)
 
-              return R[0].totals == null && F.totals ?
-                F.totals(Q) : R[0].totals
-            }).then(res => {
+            return R[0].totals == null && F.totals ?
+              F.totals(query(Query.totals)) : R[0].totals
+          }).then(res => {
+            if (res) {
               Totals = Object.keys(res)
-              dispatch(state => ({
-                ...state,
-                Rows: X,
-                totals: res
-              }))
-            })
-          }
-        ])
-      }
+            }
+            dispatch(state => ({
+              ...state,
+              Rows: X,
+              totals: res
+            }))
+          })
+        }
+      ])
 
       return R
     }
 
-    return component(e, vw, {
+    const init = {
       title: schema.title,
       description: schema.description,
       back: !back ? null : state => {
@@ -419,7 +453,7 @@ const comp = language => {
           }
         }
       },
-      group: action => {
+      group: !group ? null : action => {
         if (action == 'active') {
           return Q._group != null && Q._group.length
         } else if (action == 'current') {
@@ -509,7 +543,7 @@ const comp = language => {
         } else if (action == 'page') {
           return Z.page
         } else if (action == 'limiters') {
-          return F.limit.length <= 1 ? null : F.limit.map(l => ({
+          return Limiters.length <= 1 ? null : Limiters.map(l => ({
             value: l,
             label: t('limiter', {limit: l})
           }))
@@ -520,27 +554,31 @@ const comp = language => {
             return refresh(state)
           }
         } else if (action == 'limit') {
-          if (F.limit == null) {
-            F.limit = limit == null ? [] :
-              limit instanceof Array ? limit : [limit]
-            F.limit = F.limit.filter(l => !isNaN(l) && l > 0)
-            if (F.limit.length && Q._limit == null) {
-              Q._limit = parseInt(F.limit[0]) || 10
-            }
-          }
           return Q._limit
         }
       },
       ...getState()
-    }, (state, Query) => {
+    }
+
+    const update = (state, Query) => {
       Object.keys(Q).forEach(key => {
         delete Q[key]
       })
       Object.keys(Query).forEach(key => {
-        Q[key] = Query[key]
+        if (key == '_ids') {
+          Q[key] = Query[key].split(',')
+            .map(v => parseInt(v))
+            .filter(v => !isNaN(v))
+        } else {
+          Q[key] = Query[key]
+        }
       })
       return refresh(state)
-    })
+    }
+
+    return component(
+      e, vw, params !== null ? update(init, params || {}) : init, update
+    )
   }
 }
 

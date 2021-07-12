@@ -1,6 +1,6 @@
 export default {
-  title: "Simple table",
-  description: "This is a very simple table example!\nHope you enjoy! :)",
+  title: "Complete table",
+  description: "This is a complete table example!\nHope you enjoy! :)",
   links: [
     {
       href: "#/post",
@@ -13,26 +13,33 @@ export default {
     properties: {
       id: {
         title: "Id",
-        href: "#/user/{id}"
+        href: "#/user/{id}",
+        type: "integer"
       }, 
       register: {
-        title: "Register"
+        title: "Register",
+        type: "string"
       },
       name: {
-        title: "Name"
+        title: "Name",
+        type: "string"
       },
       gender: {
-        title: "Gender"
+        title: "Gender",
+        type: "string"
       },
       age: {
-        title: "Age"
+        title: "Age",
+        type: "integer"
       },
       balance: {
-        title: "Balance ($)"
+        title: "Balance ($)",
+        type: "number"
       },
       bio: {
         title: "Bio",
-        format: "text"
+        format: "text",
+        type: "string"
       }
     },
     links: [

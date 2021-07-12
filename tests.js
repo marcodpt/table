@@ -208,7 +208,7 @@ export default [
             } else if (action == 'limiter') {
               return null
             } else if (action == 'limit') {
-              return null
+              return 10
             }
           }
         },
@@ -236,11 +236,11 @@ export default [
                       ><i class="fas fa-step-backward"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="1">
+                      <select class="form-control">
                         <option
                           value="1"
                           label="Page 1 of 4"
-                        ></option>
+                          selected></option>
                         <option
                           value="2"
                           label="Page 2 of 4"
@@ -350,7 +350,7 @@ export default [
                       ><i class="fas fa-step-backward"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="3">
+                      <select class="form-control">
                         <option
                           value="1"
                           label="Page 1 of 4"
@@ -362,7 +362,7 @@ export default [
                         <option
                           value="3"
                           label="Page 3 of 4"
-                        ></option>
+                          selected></option>
                         <option
                           value="4"
                           label="Page 4 of 4"
@@ -370,7 +370,7 @@ export default [
                       </select>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="10">
+                      <select class="form-control">
                         <option
                           value="5"
                           label="5 items per page"
@@ -378,7 +378,7 @@ export default [
                         <option
                           value="10"
                           label="10 items per page"
-                        ></option>
+                          selected></option>
                         <option
                           value="25"
                           label="25 items per page"
@@ -672,11 +672,7 @@ export default [
                       ><i class="fas fa-times"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="">
-                        <option
-                          value=""
-                          selected
-                          disabled>⌄</option>
+                      <select class="form-control">
                         <option
                           value="id"
                           label="id"
@@ -689,14 +685,18 @@ export default [
                           value="name"
                           label="name"
                         ></option>
+                        <option
+                          value=""
+                          selected
+                          disabled>⌄</option>
                       </select>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="equal">
+                      <select class="form-control">
                         <option
                           value="equal"
                           label="equal"
-                        ></option>
+                          selected></option>
                         <option
                           value="not equal"
                           label="not equal"
@@ -708,11 +708,7 @@ export default [
                       </select>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="">
-                        <option
-                          value=""
-                          selected
-                          disabled>⌄</option>
+                      <select class="form-control">
                         <option
                           value="x"
                           label="x"
@@ -725,6 +721,10 @@ export default [
                           value="z"
                           label="z"
                         ></option>
+                        <option
+                          value=""
+                          selected
+                          disabled>⌄</option>
                       </select>
                     </div>
                     <div class="col-auto">
@@ -786,7 +786,9 @@ export default [
       ], [
         {
           group: action => {
-            if (action == 'current') {
+            if (action == 'active') {
+              return true
+            } else if (action == 'current') {
               return ': name'
             } else if (action == 'open') {
               return null
@@ -876,11 +878,7 @@ export default [
                       ><i class="fas fa-times"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="">
-                        <option
-                          value=""
-                          selected
-                          disabled>⌄</option>
+                      <select class="form-control">
                         <option
                           value="id"
                           label="id"
@@ -893,6 +891,10 @@ export default [
                           value="name"
                           label="name"
                         ></option>
+                        <option
+                          value=""
+                          selected
+                          disabled>⌄</option>
                       </select>
                     </div>
                     <div class="col-auto">
@@ -909,10 +911,10 @@ export default [
         "Group tab"
       ], [
         {
-          download: action => {
+          csv: action => {
             if (action == 'run') {
               return state => {
-                alert('download')
+                alert('csv')
                 return state
               }
             } else if (action == 'pending') {
@@ -943,10 +945,10 @@ export default [
         "Download"
       ], [
         {
-          download: action => {
+          csv: action => {
             if (action == 'run') {
               return state => {
-                alert('download')
+                alert('csv')
                 return state
               }
             } else if (action == 'pending') {
@@ -1708,10 +1710,10 @@ export default [
               return name == 'name' ? 'sort-up' : 'sort'
             }
           },
-          download: action => {
+          csv: action => {
             if (action == 'run') {
               return state => {
-                alert('download')
+                alert('csv')
                 return state
               }
             } else if (action == 'pending') {
@@ -1948,7 +1950,7 @@ export default [
                       ><i class="fas fa-step-backward"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="3">
+                      <select class="form-control">
                         <option
                           value="1"
                           label="Page 1 of 4"
@@ -1960,7 +1962,7 @@ export default [
                         <option
                           value="3"
                           label="Page 3 of 4"
-                        ></option>
+                          selected></option>
                         <option
                           value="4"
                           label="Page 4 of 4"
@@ -1968,7 +1970,7 @@ export default [
                       </select>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="10">
+                      <select class="form-control">
                         <option
                           value="5"
                           label="5 items per page"
@@ -1976,7 +1978,7 @@ export default [
                         <option
                           value="10"
                           label="10 items per page"
-                        ></option>
+                          selected></option>
                         <option
                           value="25"
                           label="25 items per page"
@@ -2296,10 +2298,10 @@ export default [
               return name == 'name' ? 'sort-up' : 'sort'
             }
           },
-          download: action => {
+          csv: action => {
             if (action == 'run') {
               return state => {
-                alert('download')
+                alert('csv')
                 return state
               }
             } else if (action == 'pending') {
@@ -2536,7 +2538,7 @@ export default [
                       ><i class="fas fa-step-backward"></i></button>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="3">
+                      <select class="form-control">
                         <option
                           value="1"
                           label="Página 1 de 4"
@@ -2548,7 +2550,7 @@ export default [
                         <option
                           value="3"
                           label="Página 3 de 4"
-                        ></option>
+                          selected></option>
                         <option
                           value="4"
                           label="Página 4 de 4"
@@ -2556,7 +2558,7 @@ export default [
                       </select>
                     </div>
                     <div class="col-auto">
-                      <select class="form-control" value="10">
+                      <select class="form-control">
                         <option
                           value="5"
                           label="5 itens por página"
@@ -2564,7 +2566,7 @@ export default [
                         <option
                           value="10"
                           label="10 itens por página"
-                        ></option>
+                          selected></option>
                         <option
                           value="25"
                           label="25 itens por página"

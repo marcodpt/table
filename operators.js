@@ -15,12 +15,16 @@ export default (t) => [
     value: '~eq~',
     label: t('eq'),
     strict: true,
-    filter: (fixed, value) => value == fixed
+    filter: (fixed, value) => fixed.split(',').reduce(
+      (pass, f) => pass || value == f, false
+    )
   }, {
     value: '~ne~',
     label: t('ne'),
     strict: true,
-    filter: (fixed, value) => value != fixed
+    filter: (fixed, value) => fixed.split(',').reduce(
+      (pass, f) => pass || value != f, false
+    )
   }, {
     value: '~gt~',
     label: t('gt'),

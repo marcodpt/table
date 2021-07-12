@@ -1,11 +1,7 @@
 import operators from './operators.js' 
 import getFilters from './filters.js' 
 
-export default (data, base, reducer, finisher) => Q => {
-  base = base || {}
-  reducer = reducer || (B => B)
-  finisher = finisher || (R => R)
-
+export default (data, totals) => Q => {
   const O = operators(k => k)
   var x = data
 
@@ -55,7 +51,7 @@ export default (data, base, reducer, finisher) => Q => {
     }, [])
 
     x = x.map(v => ({
-      ...finisher(v[1].reduce(reducer, {...base})),
+      ...totals(v[1]),
       ...v[0]
     }))
   }

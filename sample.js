@@ -7,9 +7,9 @@ export default {
   title: 'Table component',
   gh: 'https://github.com/marcodpt/table',
   samples: {
-    remote,
     simple,
-    complete
+    complete,
+    remote
   },
   comp: table,
   updates: {

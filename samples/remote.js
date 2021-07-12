@@ -10,17 +10,19 @@ const wait = (res, time) => new Promise(resolve => {
   }, time)
 })
 
-const handler = transform(data, {
-  id: 0,
-  age: 0, 
-  balance: 0
-}, (R, row) => {
-  R.id += 1
-  R.age += row.age
-  R.balance += row.balance
+const handler = transform(data, data => {
+  const R = (data || []).reduce((R, row) => {
+    R.id += 1
+    R.age += row.age
+    R.balance += row.balance
 
-  return R
-}, R => {
+    return R
+  }, {
+    id: 0,
+    age: 0, 
+    balance: 0
+  })
+
   R.age = (R.age / (R.id || 1)).toFixed(1)
   R.balance = R.balance.toFixed(2)
   return R
@@ -33,15 +35,8 @@ export default {
     description: ''
   },
   data: Q => wait(handler(Q), 1000),
-  totals: Q => wait(handler({
-    ...Q,
-    _group: ''
-  })[0], 1000),
-  count: Q => handler({
-    ...Q,
-    _limit: null,
-    _skip: null
-  }).length,
+  totals: Q => wait(handler(Q)[0], 1000),
+  count: Q => handler(Q).length,
   back: () => location.hash = '',
   values: key => {
     const V = data.reduce((V, row) => {
@@ -60,5 +55,7 @@ export default {
   group: true,
   check: true,
   csv: 'data.csv',
-  limit: [10, 2, 5, 20, 50, 100]
+  limit: [10, 2, 5, 20, 50, 100],
+  change: (Q) => console.log(Q),
+  params: null
 }
