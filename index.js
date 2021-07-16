@@ -74,7 +74,7 @@ const comp = language => {
           _sort: null,
           _group: '',
           _filter: (Q._filter || []).concat(
-            Q._ids && Q._ids.length ? 'id~eq~'+(Q._ids.join(',')) : []
+            Q._ids ? 'id~eq~'+(Q._ids) : []
           )
         } : key == 'count' ? {
           _ids: null,
@@ -184,23 +184,24 @@ const comp = language => {
           name: row == null ? name : null
         })),
         check: !check || G.length ? null : (row, exec) => {
-          Q._ids = Q._ids || []
+          const I = Q._ids ? Q._ids.split(',') : [] 
           if (exec) {
             return state => {
               const toggle = row => {
-                const i = Q._ids.indexOf(row.id)
+                const i = I.indexOf(String(row.id))
                 if (i == -1) {
-                  Q._ids.push(row.id)
+                  I.push(row.id)
                 } else {
-                  Q._ids.splice(i, 1)
+                  I.splice(i, 1)
                 }
+                Q._ids = I.length ? I.join(',') : null
               }
               row ? toggle(row) : state.Rows.forEach(row => toggle(row))
 
               return refresh(state)
             }
           } else {
-            return Q._ids.indexOf(row.id) != -1
+            return I.indexOf(String(row.id)) != -1
           }
         }
       }
@@ -240,7 +241,6 @@ const comp = language => {
               delete Q._limit
             }
             getQuery('Rows', R)
-            change && change(Q)
 
             return R[0].Rows == null && F.Rows ?
               F.Rows(query(Query.Rows)) : R[0].Rows
@@ -259,6 +259,7 @@ const comp = language => {
               Rows: X,
               totals: res
             }))
+            change && change(Q)
           })
         }
       ])
@@ -566,13 +567,7 @@ const comp = language => {
         delete Q[key]
       })
       Object.keys(Query).forEach(key => {
-        if (key == '_ids') {
-          Q[key] = Query[key].split(',')
-            .map(v => parseInt(v))
-            .filter(v => !isNaN(v))
-        } else {
-          Q[key] = Query[key]
-        }
+        Q[key] = Query[key]
       })
       return refresh(state)
     }
