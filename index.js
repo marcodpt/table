@@ -10,7 +10,7 @@ import {
   query
 } from 'https://cdn.jsdelivr.net/gh/marcodpt/query/index.js'
 import translate from './language.js'
-import operators from './operators.js'
+import ops from './operators.js'
 import getFilters from './filters.js' 
 import transform from './transform.js'
 
@@ -20,45 +20,6 @@ const render = (template, data) =>
 const comp = language => {
   const t = translate(language)
   const vw = language == 'pt' ? view_pt : view
-  var N = null
-  var O = operators(t)
-  const F = {}
-  const Q = {}
-  const Z = {}
-  const Query = {
-    count: null,
-    totals: null,
-    Rows: null
-  }
-  const getQuery = (key, R) => {
-    const q = query('', Q, 
-      key == 'totals' ? {
-        _ids: null,
-        _skip: null,
-        _limit: null,
-        _sort: null,
-        _group: '',
-        _filter: (Q._filter || []).concat(
-          Q._ids && Q._ids.length ? 'id~eq~'+(Q._ids.join(',')) : []
-        )
-      } : key == 'count' ? {
-        _ids: null,
-        _skip: null,
-        _limit: null,
-        _sort: null
-      } : {
-        _ids: null
-      }
-    )
-    if (Query[key] != q && F[key] != null) {
-      Query[key] = q
-      if (key == 'count') {
-        Z.N = null
-      } else {
-        R[0][key] = null
-      }
-    }
-  }
 
   const getFields = schema => {
     const P = schema.items.properties
@@ -94,6 +55,46 @@ const comp = language => {
     change,
     params
   }) => {
+    var N = null
+    var O = ops(t)
+    const F = {}
+    const Q = {}
+    const Z = {}
+    const Query = {
+      count: null,
+      totals: null,
+      Rows: null
+    }
+    const getQuery = (key, R) => {
+      const q = query('', Q, 
+        key == 'totals' ? {
+          _ids: null,
+          _skip: null,
+          _limit: null,
+          _sort: null,
+          _group: '',
+          _filter: (Q._filter || []).concat(
+            Q._ids && Q._ids.length ? 'id~eq~'+(Q._ids.join(',')) : []
+          )
+        } : key == 'count' ? {
+          _ids: null,
+          _skip: null,
+          _limit: null,
+          _sort: null
+        } : {
+          _ids: null
+        }
+      )
+      if (Query[key] != q && F[key] != null) {
+        Query[key] = q
+        if (key == 'count') {
+          Z.N = null
+        } else {
+          R[0][key] = null
+        }
+      }
+    }
+
     const Limiters = limit == null ? [] : 
       typeof limit == 'number' ? [limit] : limit
     const Filter = {
@@ -216,8 +217,8 @@ const comp = language => {
         dispatch => {
           Promise.resolve().then(() => {
             getQuery('count', R)
-            return R[0].count == null && F.count ?
-              F.count(query(Query.count)) : R[0].count
+            return Z.N == null && F.count ?
+              F.count(query(Query.count)) : Z.N
           }).then(res => {
             Z.N = res
             if (Q._limit == null && Limiters.length) {
