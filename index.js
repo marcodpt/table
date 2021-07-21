@@ -5,7 +5,7 @@ import {
 import component from 
   'https://cdn.jsdelivr.net/gh/marcodpt/component@0.0.1/index.js'
 import mustache from 'https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.mjs'
-import query from 'https://cdn.jsdelivr.net/gh/marcodpt/query@0.0.2/index.js'
+import query from 'https://cdn.jsdelivr.net/gh/marcodpt/query@0.0.1/index.js'
 import translate from './language.js'
 import ops from './operators.js'
 import getFilters from './filters.js' 
