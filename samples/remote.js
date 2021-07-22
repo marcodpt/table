@@ -34,11 +34,24 @@ export default {
     title: 'Remote table',
     description: ''
   },
-  data: Q => wait(handler(Q), 1000),
-  totals: Q => wait(handler(Q)[0], 1000),
-  count: Q => handler(Q).length,
+  data: Q => {
+    console.log('data')
+    console.log(Q)
+    return wait(handler(Q), 1000)
+  },
+  totals: Q => {
+    console.log('totals')
+    console.log(Q)
+    return wait(handler(Q)[0], 1000)
+  },
+  count: Q => {
+    console.log('count')
+    console.log(Q)
+    return handler(Q).length
+  },
   back: () => location.hash = '',
   values: key => {
+    console.log('values: '+key)
     const V = data.reduce((V, row) => {
       if (V.indexOf(row[key]) == -1) {
         V.push(row[key])
@@ -56,6 +69,9 @@ export default {
   check: true,
   csv: 'data.csv',
   limit: [10, 2, 5, 20, 50, 100],
-  change: (Q) => console.log(Q),
+  change: (Q) => {
+    console.log('change')
+    console.log(Q)
+  },
   params: null
 }

@@ -5,7 +5,7 @@ import {
 import component from 
   'https://cdn.jsdelivr.net/gh/marcodpt/component@0.0.1/index.js'
 import mustache from 'https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.mjs'
-import query from 'https://cdn.jsdelivr.net/gh/marcodpt/query@0.0.1/index.js'
+import query from 'https://cdn.jsdelivr.net/gh/marcodpt/query@0.0.2/index.js'
 import translate from './language.js'
 import ops from './operators.js'
 import getFilters from './filters.js' 
@@ -53,6 +53,7 @@ const comp = language => {
     params
   }) => {
     var N = null
+    var lastSearch = null
     var O = ops(t)
     const F = {}
     const Q = {}
@@ -63,8 +64,9 @@ const comp = language => {
       Rows: null
     }
     const getQuery = (key, R) => {
-      const q = query('', Q, 
-        key == 'totals' ? {
+      const q = query('', {
+        ...Q,
+        ...(key == 'totals' ? {
           _ids: null,
           _skip: null,
           _limit: null,
@@ -80,8 +82,8 @@ const comp = language => {
           _sort: null
         } : {
           _ids: null
-        }
-      )
+        })
+      })
       if (Query[key] != q && F[key] != null) {
         Query[key] = q
         if (key == 'count') {
@@ -166,7 +168,7 @@ const comp = language => {
             type: link.type,
             title: link.title
           } : {
-            href: link.multiple,
+            href: link.batch ? render(link.href, {id: Q._ids}) : undefined,
             icon: link.icon,
             type: link.type,
             title: link.title
@@ -344,11 +346,24 @@ const comp = language => {
             Q._filter = (Q._filter || []).filter(f => f.substr(0, l) != prefix)
             if (action == 'change') {
               var v = ev.target.value
+              lastSearch = v
               if (v.length) {
                 Q._filter.push(prefix+v)
               }
+              return [
+                state, 
+                [dispatch => {
+                  setTimeout(() => {
+                    if (lastSearch == v) {
+                      dispatch(state => refresh(state))
+                    }
+                  }, 500)
+                }]
+              ]
+            } else {
+              lastSearch = ''
+              return refresh(state)
             }
-            return refresh(state)
           }
         } else if (action == 'value') {
           return (Q._filter || []).reduce((search, item) => {

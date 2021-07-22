@@ -47,7 +47,8 @@ export default {
         href: "#/delete/{id}",
         title: "Delete",
         type: "danger",
-        icon: "trash"
+        icon: "trash",
+        batch: true
       }, {
         href: "#/put/{id}",
         title: "Edit",
