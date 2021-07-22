@@ -168,7 +168,7 @@ const comp = language => {
             type: link.type,
             title: link.title
           } : {
-            href: link.batch ? render(link.href, {id: Q._ids}) : undefined,
+            href: link.batch ? render(link.batch, Q) : undefined,
             icon: link.icon,
             type: link.type,
             title: link.title
