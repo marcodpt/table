@@ -258,7 +258,9 @@ const comp = language => {
               Rows: X,
               totals: res
             }))
-            change && change(Q)
+            const W = {...Q}
+            delete W._ids
+            change && change(W)
           })
         }
       ])
@@ -576,10 +578,14 @@ const comp = language => {
 
     const update = (state, Query) => {
       Object.keys(Q).forEach(key => {
-        delete Q[key]
+        if (key != '_ids') {
+          delete Q[key]
+        }
       })
       Object.keys(Query).forEach(key => {
-        Q[key] = Query[key]
+        if (key != '_ids') {
+          Q[key] = Query[key]
+        }
       })
       return refresh(state)
     }
