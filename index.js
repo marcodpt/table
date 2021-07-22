@@ -11,6 +11,15 @@ import ops from './operators.js'
 import getFilters from './filters.js' 
 import transform from './transform.js'
 
+const K = [
+  '_skip',
+  '_limit',
+  '_sort',
+  '_group',
+  '_filter',
+  '_ids'
+]
+
 const render = (template, data) =>
   template == null ? null : mustache.render('{{={ }=}}\n'+template, data)
 
@@ -63,6 +72,15 @@ const comp = language => {
       totals: null,
       Rows: null
     }
+    const setLink = href => {
+      const H = href.split('?')
+      const path = H.shift()
+      const q = query(H.join('?'), K.reduce((P, key) => {
+        delete P[key]
+        return P
+      }, {...Q}))
+      return path+(q.length ? '?'+q : '')
+    }
     const getQuery = (key, R) => {
       const q = query('', {
         ...Q,
@@ -83,7 +101,7 @@ const comp = language => {
         } : {
           _ids: null
         })
-      })
+      }, K)
       if (Query[key] != q && F[key] != null) {
         Query[key] = q
         if (key == 'count') {
@@ -161,14 +179,20 @@ const comp = language => {
     const getState = () => {
       const G = (Q._group || '').split(',').filter(g => g.length)
       return {
+        Actions: (schema.links || []).map(link => ({
+          href: setLink(link.href),
+          icon: link.icon,
+          type: link.type,
+          title: link.title
+        })),
         Links: G.length ? [] : 
           (I.links || []).map(link => row => row ? {
-            href: render(link.href, row),
+            href: setLink(render(link.href, row)),
             icon: link.icon,
             type: link.type,
             title: link.title
           } : {
-            href: link.batch ? render(link.batch, Q) : undefined,
+            href: link.batch ? setLink(render(link.batch, Q)) : undefined,
             icon: link.icon,
             type: link.type,
             title: link.title
@@ -275,25 +299,22 @@ const comp = language => {
         back()
         return state
       },
-      Actions: (schema.links || []).map(link => ({
-        href: link.href,
-        icon: link.icon,
-        type: link.type,
-        title: link.title
-      })),
       tab: '',
       sort: !sort ? null : (name, exec) => {
+        const n = name.substr(-1) == '_' ?
+          name.substr(0, name.length - 1) : name
         if (exec) {
           return state => {
-            if (Q[name] != null) {
+            if (Q[name] != null || Q[n] != null) {
               delete Q[name]
+              delete Q[n]
             } else {
               Q._sort = (Q._sort == name ? '-' : '')+name
             }
             return refresh(state)
           }
         } else {
-          return Q[name] != null ? 'times' :
+          return Q[name] != null || Q[n] != null ? 'times' :
             Q._sort == name ? 'sort-down' :
             Q._sort == ('-'+name) ? 'sort-up' : 'sort'
         }

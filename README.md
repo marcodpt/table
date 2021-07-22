@@ -45,4 +45,3 @@ DESC
 string for full group
    - array `_filter`: actives filters with items as string 
 `key`+`operator`+`value`
-   - string `_ids`: selected `id` separated with `,`
