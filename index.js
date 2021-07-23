@@ -101,7 +101,7 @@ const comp = language => {
         } : {
           _ids: null
         })
-      }, K)
+      })
       if (Query[key] != q && F[key] != null) {
         Query[key] = q
         if (key == 'count') {
