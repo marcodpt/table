@@ -292,6 +292,9 @@ const comp = language => {
       return R
     }
 
+    const rawData = name => name.substr(-1) == '_' ?
+      name.substr(0, name.length - 1) : name
+
     const init = {
       title: schema.title,
       description: schema.description,
@@ -301,8 +304,7 @@ const comp = language => {
       },
       tab: '',
       sort: !sort ? null : (name, exec) => {
-        const n = name.substr(-1) == '_' ?
-          name.substr(0, name.length - 1) : name
+        const n = rawData(name)
         if (exec) {
           return state => {
             if (Q[name] != null || Q[n] != null) {
@@ -481,7 +483,7 @@ const comp = language => {
           return Filter.value == null ? null : state => {
             Q._filter = (Q._filter || [])
             Q._filter.push(
-              Filter.field+Filter.operator+Filter.value
+              rawData(Filter.field)+Filter.operator+Filter.value
             )
             return refresh({
               ...state,
