@@ -311,14 +311,14 @@ const comp = language => {
               delete Q[name]
               delete Q[n]
             } else {
-              Q._sort = (Q._sort == name ? '-' : '')+name
+              Q._sort = (Q._sort == n || Q._sort == name ? '-' : '')+n
             }
             return refresh(state)
           }
         } else {
           return Q[name] != null || Q[n] != null ? 'times' :
-            Q._sort == name ? 'sort-down' :
-            Q._sort == ('-'+name) ? 'sort-up' : 'sort'
+            Q._sort == n || Q._sort == name ? 'sort-down' :
+            Q._sort == ('-'+n) || Q._sort == ('-'+name) ? 'sort-up' : 'sort'
         }
       },
       csv: !csv ? null : action => {
