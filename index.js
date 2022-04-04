@@ -201,6 +201,7 @@ const comp = language => {
           !G.length || Totals.indexOf(key) != -1 || G.indexOf(key) != -1
         ).map(name => row => ({
           title: P[name].title,
+          description: P[name].description,
           href: row && !G.length ? render(P[name].href, row) : null,
           data: !row || row[name] == null ? '' : row[name],
           format: P[name].format || P[name].type,

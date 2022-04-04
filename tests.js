@@ -37,7 +37,7 @@ export default [
                 <th
                   class="align-middle text-center"
                   colspan="100%"
-                >sample table</th>
+                ><span>sample table</span></th>
               </tr>
             </thead>
           </table>
@@ -45,6 +45,7 @@ export default [
         "title"
       ], [
         {
+          title: 'sample table',
           description: [
             "Hello world!",
             "This is my table, and this table have a description support! :)",
@@ -61,24 +62,12 @@ export default [
                 <th
                   class="align-middle text-center"
                   colspan="100%"
-                >
-                  <div
-                    class="m-auto text-left"
-                    style="max-width:300px"
-                  >
-                    <div
-                      class="alert alert-info"
-                      role="alert"
-                    >
-                      <span style="white-space:pre-wrap">${[
-                        "Hello world!",
-                        "This is my table, and this table have a description support! :)",
-                        "This is a long text test for see how it fits in the layout!",
-                        "Hope you enjoy!"
-                      ].join('\n')}</span>
-                    </div>
-                  </div>
-                </th>
+                ><span title="${[
+                  "Hello world!",
+                  "This is my table, and this table have a description support! :)",
+                  "This is a long text test for see how it fits in the layout!",
+                  "Hope you enjoy!"
+                ].join('\n')}">sample table</span></th>
               </tr>
             </thead>
           </table>
@@ -1872,30 +1861,12 @@ export default [
                 <th
                   class="align-middle text-center"
                   colspan="100%"
-                >sample table</th>
-              </tr>
-              <tr>
-                <th
-                  class="align-middle text-center"
-                  colspan="100%"
-                >
-                  <div
-                    class="m-auto text-left"
-                    style="max-width:300px"
-                  >
-                    <div
-                      class="alert alert-info"
-                      role="alert"
-                    >
-                      <span style="white-space:pre-wrap">${[
-                        "Hello world!",
-                        "This is my table, and this table have a description support! :)",
-                        "This is a long text test for see how it fits in the layout!",
-                        "Hope you enjoy!"
-                      ].join('\n')}</span>
-                    </div>
-                  </div>
-                </th>
+                ><span title="${[
+                  "Hello world!",
+                  "This is my table, and this table have a description support! :)",
+                  "This is a long text test for see how it fits in the layout!",
+                  "Hope you enjoy!"
+                ].join('\n')}">sample table</span></th>
               </tr>
               <tr>
                 <th
@@ -2460,30 +2431,12 @@ export default [
                 <th
                   class="align-middle text-center"
                   colspan="100%"
-                >Tabela em Português</th>
-              </tr>
-              <tr>
-                <th
-                  class="align-middle text-center"
-                  colspan="100%"
-                >
-                  <div
-                    class="m-auto text-left"
-                    style="max-width:300px"
-                  >
-                    <div
-                      class="alert alert-info"
-                      role="alert"
-                    >
-                      <span style="white-space:pre-wrap">${[
-                        "Olá mundo!",
-                        "Esta é minha tabela, e esta tabela tem suporte para descrição! :)",
-                        "Este é um texto longo de teste para ver como fica visualmente!",
-                        "Espero que goste!"
-                      ].join('\n')}</span>
-                    </div>
-                  </div>
-                </th>
+                ><span title="${[
+                  "Olá mundo!",
+                  "Esta é minha tabela, e esta tabela tem suporte para descrição! :)",
+                  "Este é um texto longo de teste para ver como fica visualmente!",
+                  "Espero que goste!"
+                ].join('\n')}">Tabela em Português</span></th>
               </tr>
               <tr>
                 <th

@@ -18,11 +18,13 @@ export default {
       }, 
       register: {
         title: "Register",
-        type: "string"
+        type: "string",
+        format: "date"
       },
       name: {
         title: "Name",
-        type: "string"
+        type: "string",
+        description: "Registered name"
       },
       gender: {
         title: "Gender",
@@ -34,7 +36,8 @@ export default {
       },
       balance: {
         title: "Balance ($)",
-        type: "number"
+        type: "number",
+        description: "Current cash balance"
       },
       bio: {
         title: "Bio",

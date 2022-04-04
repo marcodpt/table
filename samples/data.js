@@ -1,7 +1,7 @@
 export default [
   {
     "id": 1,
-    "register": "02/03/2021",
+    "register": "2021-03-02",
     "name": "Liam",
     "gender": "male",
     "age": 23,
@@ -9,7 +9,7 @@ export default [
     "bio": "Suspendisse et elit tempus ipsum suscipit pharetra.\nEtiam at tortor pharetra, elementum elit at, sollicitudin est." 
   }, {
     "id": 2,
-    "register": "05/01/2021",
+    "register": "2021-01-05",
     "name": "Olivia",
     "gender": "female",
     "age": 38,
@@ -17,7 +17,7 @@ export default [
     "bio": "Ut vestibulum metus in ipsum euismod, at euismod nibh pretium.\nPraesent hendrerit felis sed pulvinar tempor."
   }, {
     "id": 3,
-    "register": "11/01/2021",
+    "register": "2021-01-11",
     "name": "Noah",
     "gender": "male",
     "age": 45,
@@ -25,7 +25,7 @@ export default [
     "bio": "Praesent mattis libero eget lectus finibus, eu iaculis lorem lobortis.\nFusce at mi vel sapien consectetur tincidunt a sit amet orci."
   }, {
     "id": 4,
-    "register": "13/01/2021",
+    "register": "2021-01-13",
     "name": "Emma",
     "gender": "female",
     "age": 19,
@@ -33,7 +33,7 @@ export default [
     "bio": "Ut non est semper, egestas purus et, aliquam lacus.\nDuis eu turpis egestas, egestas lectus eu, euismod erat."
   }, {
     "id": 5,
-    "register": "14/01/2021",
+    "register": "2021-01-14",
     "name": "Oliver",
     "gender": "male",
     "age": 21,
@@ -41,7 +41,7 @@ export default [
     "bio": "In faucibus ex blandit orci lobortis, at porttitor ante iaculis."
   }, {
     "id": 6,
-    "register": "15/01/2021",
+    "register": "2021-01-15",
     "name": "Ava",
     "gender": "female",
     "age": 55,
@@ -49,7 +49,7 @@ export default [
     "bio": "Cras sed massa sit amet justo vehicula pharetra nec eget tortor.\nCurabitur vehicula dui non mi consequat, sit amet ornare nisi bibendum."
   }, {
     "id": 7,
-    "register": "18/01/2021",
+    "register": "2021-01-18",
     "name": "Elijah",
     "gender": "male",
     "age": 63,
@@ -57,7 +57,7 @@ export default [
     "bio": "Nunc a leo viverra, sagittis neque ac, blandit nisi.\nEtiam volutpat orci vitae nibh sollicitudin ullamcorper."
   }, {
     "id": 8,
-    "register": "02/02/2021",
+    "register": "2021-02-02",
     "name": "Charlotte",
     "gender": "female",
     "age": 25,
@@ -65,7 +65,7 @@ export default [
     "bio": "Donec sit amet velit at massa auctor iaculis.\nProin consectetur odio et dignissim interdum."
   }, {
     "id": 9,
-    "register": "08/02/2021",
+    "register": "2021-02-08",
     "name": "William",
     "gender": "male",
     "age": 34,
@@ -73,7 +73,7 @@ export default [
     "bio": "Quisque porttitor ex ac dictum molestie.\nProin a purus scelerisque, feugiat tellus in, tristique nulla."
   }, {
     "id": 10,
-    "register": "10/02/2021",
+    "register": "2021-02-10",
     "name": "Sophia",
     "gender": "female",
     "age": 44,
@@ -81,7 +81,7 @@ export default [
     "bio": "Morbi viverra mauris ullamcorper, mattis risus sed, porttitor velit.\nPhasellus tincidunt tortor vel interdum imperdiet.\nPellentesque et tellus tempus, tincidunt quam ut, fringilla nisl."
   }, {
     "id": 11,
-    "register": "22/02/2021",
+    "register": "2021-02-22",
     "name": "James",
     "gender": "male",
     "age": 32,
@@ -89,7 +89,7 @@ export default [
     "bio": "Praesent vitae odio aliquam, vestibulum sapien quis, volutpat odio.\nSed eu eros nec nisi fermentum eleifend vel nec lorem."
   }, {
     "id": 12,
-    "register": "27/02/2021",
+    "register": "2021-02-27",
     "name": "Amelia",
     "gender": "female",
     "age": 30,
@@ -97,7 +97,7 @@ export default [
     "bio": "Vivamus hendrerit risus vitae ipsum rutrum, id sagittis lorem tincidunt."
   }, {
     "id": 13,
-    "register": "10/03/2021",
+    "register": "2021-03-10",
     "name": "Benjamin",
     "gender": "male",
     "age": 28,
@@ -105,7 +105,7 @@ export default [
     "bio": "Integer aliquam purus ac enim porta, faucibus maximus odio sollicitudin.\nInteger vitae est sed ipsum suscipit fermentum auctor vitae felis."
   }, {
     "id": 14,
-    "register": "12/03/2021",
+    "register": "2021-03-12",
     "name": "Isabella",
     "gender": "female",
     "age": 42,
@@ -113,7 +113,7 @@ export default [
     "bio": "Etiam nec massa in leo hendrerit bibendum.\nCras accumsan eros ac leo posuere condimentum."
   }, {
     "id": 15,
-    "register": "16/03/2021",
+    "register": "2021-03-16",
     "name": "Lucas",
     "gender": "male",
     "age": 31,
@@ -121,7 +121,7 @@ export default [
     "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nVivamus eu dolor vitae augue tristique pretium."
   }, {
     "id": 16,
-    "register": "19/03/2021",
+    "register": "2021-03-19",
     "name": "Mia",
     "gender": "female",
     "age": 32,

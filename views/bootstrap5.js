@@ -3,7 +3,7 @@ import {
   data,
   link,
   field
-} from 'https://cdn.jsdelivr.net/gh/marcodpt/views@0.0.1/index.js'
+} from 'https://cdn.jsdelivr.net/gh/marcodpt/views@0.0.2/index.js'
 import translate from '../language.js'
 
 const sm = l =>
@@ -94,22 +94,9 @@ const vw = language => {
     Heads: [
       !title ? null : {
         type: 'raw',
-        content: text(title)
-      },
-      !description ? null : {
-        type: 'raw',
-        content: h('div', {
-          class: [
-            'm-auto',
-            'text-left'
-          ],
-          style: {
-            maxWidth: '300px'
-          }
-        }, data({
-          data: description,
-          type: 'info'
-        }))
+        content: h('span', {
+          title: description
+        }, text(title))
       },
       !back && !Actions ? null : {
         type: 'inline',
@@ -296,12 +283,14 @@ const vw = language => {
       }, sm(l())) : cell(h, {}, sm(l(row)))
     )).concat((Fields || []).map(f => (row, type) => {
       const X = f(row)
+
       if (row == null) {
         return cell(h, {
           head: true
         }, link({
           click: sort ? sort(X.name, true) : null,
           title: X.title,
+          description: X.description,
           after: sort ? sort(X.name) : null
         }))
       } else {
